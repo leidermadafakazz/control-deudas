@@ -1,3 +1,50 @@
-.kpiGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-.empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.kpiGrid   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.empty     { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; line-height: 1.8; }
 .emptyIcon { font-size: 40px; margin-bottom: 12px; }
+
+.monthRow  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.monthLbl  { font-size: 13px; color: var(--muted); font-weight: 500; }
+.monthVal  { font-size: 20px; font-weight: 700; color: var(--navy); }
+
+.ingresosRow  { margin-bottom: 14px; }
+.ingresosLbl  { font-size: 13px; color: var(--muted); font-weight: 500; display: block; margin-bottom: 6px; }
+.ingresosInput {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 15px; font-family: var(--font);
+  background: var(--surface); color: var(--text);
+  transition: border-color .15s;
+}
+.ingresosInput:focus { outline: none; border-color: var(--navy); }
+
+.pctBox    { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 4px; }
+.pctHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pctValue  { font-size: 14px; font-weight: 700; }
+.pctValue.green  { color: var(--green); }
+.pctValue.orange { color: #D97706; }
+.pctValue.red    { color: var(--red); }
+.pctHint   { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+.barWrap  { height: 8px; background: #E5E7EB; border-radius: 99px; overflow: hidden; }
+.barFill  { height: 100%; border-radius: 99px; transition: width .4s; }
+.barFill.green  { background: var(--green); }
+.barFill.orange { background: #D97706; }
+.barFill.red    { background: var(--red); }
+
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+.splitRow  { display: flex; gap: 16px; margin-bottom: 12px; }
+.splitItem { display: flex; align-items: center; gap: 10px; flex: 1; }
+.splitDot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.splitAmt  { font-size: 15px; font-weight: 700; }
+.splitLbl  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.splitBar    { height: 8px; border-radius: 99px; overflow: hidden; display: flex; margin-bottom: 8px; }
+.splitBarInt { background: var(--red);   height: 100%; transition: width .4s; }
+.splitBarCap { background: var(--green); height: 100%; transition: width .4s; }
+
+.splitHint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+.green  { color: var(--green); }
+.orange { color: #D97706; }
+.red    { color: var(--red); }

@@ -15,8 +15,9 @@ export default function ModalPago({ open, onClose, onSave, deudas }) {
 
   const handleSave = () => {
     const monto = parseFloat(form.monto) || 0
-    if (!monto) return
-    onSave({ ...form, deudaId: parseInt(form.deudaId), monto })
+    if (!monto || !form.deudaId) return
+    // deudaId se pasa como string (ID de Firestore), sin parseInt
+    onSave({ ...form, monto })
     onClose()
   }
 
@@ -35,7 +36,7 @@ export default function ModalPago({ open, onClose, onSave, deudas }) {
       </Field>
       <Field label="Medio de pago">
         <select value={form.medio} onChange={set('medio')}>
-          {['Nequi','PSE','Transferencia','Efectivo','Daviplata','Otro'].map(m => (
+          {['Nequi', 'PSE', 'Transferencia', 'Efectivo', 'Daviplata', 'Otro'].map(m => (
             <option key={m}>{m}</option>
           ))}
         </select>

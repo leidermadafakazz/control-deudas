@@ -22,3 +22,8 @@
 .table tbody td { padding: 7px 10px; text-align: right; border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; }
 .table tbody tr:nth-child(even) td { background: #FAFAFA; }
 .tdCenter { text-align: center !important; color: var(--muted); }
+
+.hint { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.highlight { border: 1.5px solid var(--navy); }
+.totalFinal { border: 1.5px solid var(--red); }
+.orange { color: #D97706; }

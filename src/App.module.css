@@ -86,3 +86,9 @@
 @media (max-width: 430px) {
   .fab { right: 20px; }
 }
+
+.splash { min-height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 64px; background: var(--navy); }
+.loading { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
+.logoutBtn { background: none; border: none; cursor: pointer; padding: 0; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; overflow: hidden; }
+.avatarImg { width: 100%; height: 100%; object-fit: cover; }

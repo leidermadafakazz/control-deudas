@@ -1,84 +1,69 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-
-const STORAGE_KEY = 'control-deudas-v1'
-
-const INITIAL_DATA = {
-  deudas: [
-    { id: 1, desc: 'Préstamo personal', acr: 'Bancolombia', tipo: 'Préstamo', total: 5000000, pagado: 1000000, cuota: 350000, tasa: 1.8, fecha: '2027-01-01', notas: 'Libre inversión' },
-    { id: 2, desc: 'Nequi préstamo',    acr: 'Nequi',       tipo: 'App',      total: 800000,  pagado: 200000,  cuota: 100000, tasa: 2.2, fecha: '2026-02-15', notas: 'Nómina' },
-    { id: 3, desc: 'Moto',              acr: 'Financiera',  tipo: 'Vehículo', total: 8000000, pagado: 2000000, cuota: 450000, tasa: 1.5, fecha: '2027-03-01', notas: 'Honda CB' },
-    { id: 4, desc: 'Préstamo familiar', acr: 'Familia',     tipo: 'Personal', total: 1500000, pagado: 500000,  cuota: 0,      tasa: 0,   fecha: '',           notas: 'Sin intereses' },
-  ],
-  pagos: [
-    { id: 101, deudaId: 2, desc: 'Nequi préstamo',    monto: 100000, fecha: '2025-02-01', medio: 'Nequi',         comp: 'NEQ-001', obs: 'Abono 1' },
-    { id: 102, deudaId: 3, desc: 'Moto',              monto: 450000, fecha: '2025-02-15', medio: 'PSE',           comp: 'FIN-034', obs: 'Cuota enero' },
-    { id: 103, deudaId: 1, desc: 'Préstamo personal', monto: 350000, fecha: '2025-03-01', medio: 'Transferencia', comp: 'BC-112',  obs: 'Cuota marzo' },
-  ],
-  nextId: 200,
-}
-
-function loadData() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) return JSON.parse(saved)
-  } catch (e) { /* ignore */ }
-  return INITIAL_DATA
-}
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import {
+  collection, doc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, serverTimestamp,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import { useAuth } from './AuthContext'
 
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
-  const [state, setState] = useState(() => loadData())
+  const { user } = useAuth()
+  const [deudas,  setDeudas]  = useState([])
+  const [pagos,   setPagos]   = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const save = useCallback((newState) => {
-    setState(newState)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newState))
-  }, [])
+  const deudasRef = user ? collection(db, 'users', user.uid, 'deudas') : null
+  const pagosRef  = user ? collection(db, 'users', user.uid, 'pagos')  : null
 
-  const agregarDeuda = useCallback((deuda) => {
-    save(prev => {
-      const next = { ...prev, deudas: [...prev.deudas, { ...deuda, id: prev.nextId }], nextId: prev.nextId + 1 }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
+  useEffect(() => {
+    if (!deudasRef) { setDeudas([]); setLoading(false); return }
+    const q = query(deudasRef, orderBy('creadoEn', 'asc'))
+    return onSnapshot(q, (snap) => {
+      setDeudas(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
     })
-  }, [])
+  }, [user])
 
-  const editarDeuda = useCallback((id, datos) => {
-    save(prev => {
-      const next = { ...prev, deudas: prev.deudas.map(d => d.id === id ? { ...d, ...datos } : d) }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
+  useEffect(() => {
+    if (!pagosRef) { setPagos([]); return }
+    const q = query(pagosRef, orderBy('creadoEn', 'desc'))
+    return onSnapshot(q, (snap) => {
+      setPagos(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     })
-  }, [])
+  }, [user])
 
-  const eliminarDeuda = useCallback((id) => {
-    save(prev => {
-      const next = { ...prev, deudas: prev.deudas.filter(d => d.id !== id), pagos: prev.pagos.filter(p => p.deudaId !== id) }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
-  }, [])
+  const agregarDeuda = useCallback(async (datos) => {
+    if (!deudasRef) return
+    await addDoc(deudasRef, { ...datos, creadoEn: serverTimestamp() })
+  }, [user])
 
-  const registrarPago = useCallback((pago) => {
-    setState(prev => {
-      const deuda = prev.deudas.find(d => d.id === pago.deudaId)
-      if (!deuda) return prev
-      const next = {
-        ...prev,
-        deudas: prev.deudas.map(d => d.id === pago.deudaId
-          ? { ...d, pagado: Math.min(d.total, d.pagado + pago.monto) }
-          : d
-        ),
-        pagos: [...prev.pagos, { ...pago, id: prev.nextId, desc: deuda.desc }],
-        nextId: prev.nextId + 1,
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
-  }, [])
+  const editarDeuda = useCallback(async (id, datos) => {
+    if (!user) return
+    await updateDoc(doc(db, 'users', user.uid, 'deudas', id), datos)
+  }, [user])
+
+  const eliminarDeuda = useCallback(async (id) => {
+    if (!user) return
+    await deleteDoc(doc(db, 'users', user.uid, 'deudas', id))
+    const pagosDeLaDeuda = pagos.filter(p => p.deudaId === id)
+    await Promise.all(pagosDeLaDeuda.map(p =>
+      deleteDoc(doc(db, 'users', user.uid, 'pagos', p.id))
+    ))
+  }, [user, pagos])
+
+  const registrarPago = useCallback(async (pago) => {
+    if (!user || !deudasRef || !pagosRef) return
+    const deuda = deudas.find(d => d.id === pago.deudaId)
+    if (!deuda) return
+    const nuevoPagado = Math.min(deuda.total, (deuda.pagado || 0) + pago.monto)
+    await updateDoc(doc(db, 'users', user.uid, 'deudas', pago.deudaId), { pagado: nuevoPagado })
+    await addDoc(pagosRef, { ...pago, desc: deuda.desc, creadoEn: serverTimestamp() })
+  }, [user, deudas])
 
   return (
-    <AppContext.Provider value={{ ...state, agregarDeuda, editarDeuda, eliminarDeuda, registrarPago }}>
+    <AppContext.Provider value={{ deudas, pagos, loading, agregarDeuda, editarDeuda, eliminarDeuda, registrarPago }}>
       {children}
     </AppContext.Provider>
   )

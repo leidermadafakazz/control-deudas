@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { AppProvider, useApp } from './context/AppContext'
 import { fechaLarga } from './utils/format'
+import Login       from './screens/Login'
 import Dashboard   from './screens/Dashboard'
 import Deudas      from './screens/Deudas'
 import Pagos       from './screens/Pagos'
@@ -10,17 +12,21 @@ import ModalPago   from './components/ModalPago'
 import styles from './App.module.css'
 
 const TABS = [
-  { id: 'dashboard',   label: 'Inicio',       icon: '🏠' },
-  { id: 'deudas',      label: 'Deudas',       icon: '📋' },
-  { id: 'pagos',       label: 'Pagos',        icon: '📅' },
-  { id: 'calculadora', label: 'Calculadora',  icon: '🧮' },
+  { id: 'dashboard',   label: 'Inicio',      icon: '🏠' },
+  { id: 'deudas',      label: 'Deudas',      icon: '📋' },
+  { id: 'pagos',       label: 'Pagos',       icon: '📅' },
+  { id: 'calculadora', label: 'Calculadora', icon: '🧮' },
 ]
 
 function AppInner() {
-  const { deudas, agregarDeuda, registrarPago } = useApp()
-  const [tab, setTab]           = useState('dashboard')
+  const { user, loading: authLoading, logout } = useAuth()
+  const { deudas, loading: dataLoading, agregarDeuda, registrarPago } = useApp()
+  const [tab,        setTab]        = useState('dashboard')
   const [modalDeuda, setModalDeuda] = useState(false)
   const [modalPago,  setModalPago]  = useState(false)
+
+  if (authLoading) return <div className={styles.splash}>💰</div>
+  if (!user)       return <Login />
 
   const screen = {
     dashboard:   <Dashboard />,
@@ -34,20 +40,25 @@ function AppInner() {
 
   return (
     <div className={styles.app}>
-      {/* Top bar */}
       <header className={styles.topbar}>
         <div>
           <h1 className={styles.title}>💰 Control de Deudas</h1>
           <div className={styles.date}>{fechaLarga()}</div>
         </div>
+        <button className={styles.logoutBtn} onClick={logout} title="Cerrar sesión">
+          <span className={styles.avatar}>
+            {user.photoURL
+              ? <img src={user.photoURL} alt="" className={styles.avatarImg} />
+              : (user.displayName || user.email || '?')[0].toUpperCase()
+            }
+          </span>
+        </button>
       </header>
 
-      {/* Screen */}
-      <main className={styles.main}>
-        {screen[tab]}
+      <main className={styles.main} key={tab}>
+        {dataLoading ? <div className={styles.loading}>Cargando...</div> : screen[tab]}
       </main>
 
-      {/* Bottom nav */}
       <nav className={styles.nav}>
         {TABS.map(t => (
           <button
@@ -61,12 +72,10 @@ function AppInner() {
         ))}
       </nav>
 
-      {/* FAB */}
       {fabLabel && (
         <button className={styles.fab} onClick={openFab}>{fabLabel}</button>
       )}
 
-      {/* Modals */}
       <ModalDeuda
         open={modalDeuda}
         onClose={() => setModalDeuda(false)}
@@ -85,8 +94,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppInner />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AppInner />
+      </AppProvider>
+    </AuthProvider>
   )
 }
