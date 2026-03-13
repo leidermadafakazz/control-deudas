@@ -57,9 +57,24 @@ export function AppProvider({ children }) {
     if (!user || !deudasRef || !pagosRef) return
     const deuda = deudas.find(d => d.id === pago.deudaId)
     if (!deuda) return
-    const nuevoPagado = Math.min(deuda.total, (deuda.pagado || 0) + pago.monto)
+
+    // Calcular interés y capital del pago
+    const saldoActual = deuda.total - (deuda.pagado || 0)
+    const tasa = (deuda.tasa || 0) / 100
+    const interesMes = saldoActual * tasa
+    const abonoCapital = Math.max(0, pago.monto - interesMes)
+
+    // Solo se resta el abono a capital del saldo
+    const nuevoPagado = Math.min(deuda.total, (deuda.pagado || 0) + abonoCapital)
+
     await updateDoc(doc(db, 'users', user.uid, 'deudas', pago.deudaId), { pagado: nuevoPagado })
-    await addDoc(pagosRef, { ...pago, desc: deuda.desc, creadoEn: serverTimestamp() })
+    await addDoc(pagosRef, {
+      ...pago,
+      desc: deuda.desc,
+      interesMes: Math.round(interesMes),
+      abonoCapital: Math.round(abonoCapital),
+      creadoEn: serverTimestamp(),
+    })
   }, [user, deudas])
 
   return (

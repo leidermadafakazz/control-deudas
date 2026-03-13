@@ -1,7 +1,15 @@
-.item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); gap: 8px; }
 .item:last-child { border-bottom: none; }
+.itemLeft { flex: 1; }
 .desc { font-size: 14px; font-weight: 500; }
 .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.amt  { font-size: 15px; font-weight: 600; color: var(--red); }
+.amt  { font-size: 15px; font-weight: 600; color: var(--red); white-space: nowrap; }
+
+.desglose { display: flex; gap: 10px; margin-top: 6px; }
+.capital  { font-size: 11px; font-weight: 600; color: var(--green); background: var(--green-bg); padding: 2px 8px; border-radius: 99px; }
+.interes  { font-size: 11px; font-weight: 600; color: var(--red);   background: var(--red-bg);   padding: 2px 8px; border-radius: 99px; }
+
+.totalRow { display: flex; justify-content: space-between; padding: 12px 16px; font-size: 14px; font-weight: 600; background: var(--bg); }
+
 .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; line-height: 1.8; }
 .emptyIcon { font-size: 40px; margin-bottom: 12px; }
