@@ -1,0 +1,41 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:       #1F3864;
+  --navy-light: #2E4F8A;
+  --red:        #C00000;
+  --red-bg:     #FFF0F0;
+  --green:      #00853E;
+  --green-bg:   #F0FFF6;
+  --blue:       #185FA5;
+  --blue-bg:    #EBF4FF;
+  --purple:     #534AB7;
+  --purple-bg:  #F0EFFE;
+  --bg:         #F4F6F9;
+  --surface:    #FFFFFF;
+  --border:     rgba(0,0,0,0.08);
+  --text:       #1A1A2E;
+  --muted:      #6B7280;
+  --radius:     14px;
+  --radius-sm:  8px;
+  --shadow:     0 2px 12px rgba(0,0,0,0.08);
+  --font:       'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, select, button {
+  font-family: var(--font);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
